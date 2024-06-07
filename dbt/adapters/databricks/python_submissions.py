@@ -12,9 +12,9 @@ from typing import Tuple
 from dbt.adapters.base import PythonJobHelper
 from dbt.adapters.databricks import utils
 from dbt.adapters.databricks.__version__ import version
-from dbt.adapters.databricks.auth import BearerAuth
+from dbt.adapters.databricks.credentials import BearerAuth
+from dbt.adapters.databricks.credentials import DatabricksCredentialManager
 from dbt.adapters.databricks.credentials import DatabricksCredentials
-from dbt.adapters.databricks.credentials import TCredentialProvider
 from dbt.adapters.databricks.logging import logger
 from dbt_common.exceptions import DbtRuntimeError
 from pydantic import BaseModel
@@ -522,7 +522,7 @@ class AllPurposeClusterPythonJobHelper(BaseDatabricksHelper):
 
 class DbtDatabricksBasePythonJobHelper(BaseDatabricksHelper):
     credentials: DatabricksCredentials  # type: ignore[assignment]
-    _credentials_provider: Optional[TCredentialProvider] = None
+    _credentials_manager: DatabricksCredentialManager
 
     def __init__(self, parsed_model: Dict, credentials: DatabricksCredentials) -> None:
         super().__init__(
@@ -542,8 +542,8 @@ class DbtDatabricksBasePythonJobHelper(BaseDatabricksHelper):
         http_headers: Dict[str, str] = credentials.get_all_http_headers(
             connection_parameters.pop("http_headers", {})
         )
-        self._credentials_provider = credentials.authenticate(self._credentials_provider)
-        header_factory = self._credentials_provider(None)  # type: ignore
+        self._credentials_manager = credentials.authenticate()
+        header_factory = self._credentials_manager.header_factory
         self.session.auth = BearerAuth(header_factory)
 
         self.extra_headers.update({"User-Agent": user_agent, **http_headers})
