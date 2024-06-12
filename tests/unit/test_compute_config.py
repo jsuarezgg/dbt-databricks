@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 import dbt.exceptions
 from dbt.adapters.databricks import connections
@@ -7,6 +8,7 @@ from dbt.contracts.graph import model_config
 from dbt.contracts.graph import nodes
 
 
+@patch("dbt.adapters.databricks.credentials.Config")
 class TestDatabricksConnectionHTTPPath(unittest.TestCase):
     """Test the various cases for determining a specified warehouse."""
 
@@ -14,7 +16,7 @@ class TestDatabricksConnectionHTTPPath(unittest.TestCase):
         "Compute resource foo does not exist or does not specify http_path, " "relation: a_relation"
     )
 
-    def test_get_http_path_model(self):
+    def test_get_http_path_model(self, _):
         default_path = "my_http_path"
         creds = DatabricksCredentials(http_path=default_path)
 
@@ -71,7 +73,7 @@ class TestDatabricksConnectionHTTPPath(unittest.TestCase):
         path = connections._get_http_path(node, creds)
         self.assertEqual("alternate_path", path)
 
-    def test_get_http_path_seed(self):
+    def test_get_http_path_seed(self, _):
         default_path = "my_http_path"
         creds = DatabricksCredentials(http_path=default_path)
 
@@ -128,7 +130,7 @@ class TestDatabricksConnectionHTTPPath(unittest.TestCase):
         path = connections._get_http_path(node, creds)
         self.assertEqual("alternate_path", path)
 
-    def test_get_http_path_snapshot(self):
+    def test_get_http_path_snapshot(self, _):
         default_path = "my_http_path"
         creds = DatabricksCredentials(http_path=default_path)
 
